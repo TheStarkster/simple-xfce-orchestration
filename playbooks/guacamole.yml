@@ -95,6 +95,11 @@
         - /etc/guacamole/extensions
         - /etc/guacamole/lib
 
+    - name: Download Guacamole Client (WAR file)
+      get_url:
+        url: https://downloads.apache.org/guacamole/1.5.3/binary/guacamole-1.5.3.war
+        dest: /var/lib/tomcat9/webapps/guacamole.war
+
     - name: Download Guacamole JDBC Connector
       get_url:
         url: 'https://downloads.apache.org/guacamole/1.5.3/binary/guacamole-auth-jdbc-1.5.3.tar.gz'
@@ -160,17 +165,13 @@
           mysql-password: gritha#toc#6451
 
           #SAMl Authentication
-          saml-idp-metadata-url: https://apis.accountsntax.com/api/v1/clients/saml/metadata
-          saml-idp-url: https://app.accountsntax.com/home
-          saml-entity-id: https://toc1.accountsntax.com/guacamole
-          saml-callback-url: https://toc1.accountsntax.com/guacamole
-          saml-strict: false
-          saml-debug: true
-          extension-priority: *, saml
-    - name: Copy guacamole.war to tomcat9 webapps
-      copy:
-        src: ../guacamole.war
-        dest: /var/lib/tomcat9/webapps/guacamole.war
+          # saml-idp-metadata-url: https://apis.accountsntax.com/api/v1/clients/saml/metadata
+          # saml-idp-url: https://app.accountsntax.com/home
+          # saml-entity-id: https://toc1.accountsntax.com/guacamole
+          # saml-callback-url: https://toc1.accountsntax.com/guacamole
+          # saml-strict: false
+          # saml-debug: true
+          # extension-priority: *, saml
 
     - name: Download guacamole SSO extension
       get_url:

@@ -1,0 +1,7 @@
+---
+- hosts: localhost
+  become: yes
+  
+- import_playbook: playbooks/guacamole.yml
+- import_playbook: playbooks/sql.yml
+- import_playbook: playbooks/configurations.yml

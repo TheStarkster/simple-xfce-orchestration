@@ -1,0 +1,65 @@
+- hosts: localhost
+  become: yes
+  tasks:
+
+    - name: add user xrdp into group ssl-cert
+      user:
+        name: xrdp
+        groups: ssl-cert
+        append: yes
+
+    - name: Allow port 3389 in UFW
+      ufw:
+        rule: allow
+        port: 3389
+
+    - name: Allow port 3000 in UFW
+      ufw:
+        rule: allow
+        port: 3000
+
+    - name: Allow port 4000 in UFW
+      ufw:
+        rule: allow
+        port: 4000
+
+    - name: Allow port 8080 in UFW
+      ufw:
+        rule: allow
+        port: 8080
+
+    - name: Allow port 80 in UFW
+      ufw:
+        rule: allow
+        port: 80
+
+    - name: Allow port 443 in UFW
+      ufw:
+        rule: allow
+        port: 443
+
+    - name: Create a group named 'sftponly'
+      group:
+        name: sftponly
+        state: present
+
+    - name: Add unset lines in startwm.sh
+      lineinfile:
+        path: /etc/xrdp/startwm.sh
+        line: |
+          unset DBUS_SESSION_BUS_ADDRESS
+          unset XDG_RUNTIME_DIR
+        insertbefore: '^test.*Xsession'
+
+    - name: Add xfce4-session to ~/.xsession
+      lineinfile:
+        path: /home/{{ user_name }}/.xsession
+        line: 'xfce4-session'
+        create: yes
+        owner: "{{ user_name }}"
+        group: "{{ user_name }}"
+
+    - name: Set password for main user
+      user:
+        name: "{{ user_name }}"
+        password: "{{ '12345678' | password_hash('sha512') }}"

@@ -1,0 +1,19 @@
+---
+- hosts: localhost
+  become: yes
+  roles:
+    - role: thestarkster.mariadb_install
+      become: yes
+      vars:
+        mariadb_version: "10.5"
+        deny_remote_connections: true
+        mysql_root_password: "gritha#toc#6451"
+        create_database: true
+        database: guacamole_db
+        create_db_user: true
+        db_user_name: guacamole_user
+        db_user_password: "gritha#toc#6451"
+        import_sql_file: true
+        sql_file_name:
+          - 001-create-schema.sql
+          - 002-create-admin-user.sql

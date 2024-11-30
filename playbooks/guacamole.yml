@@ -1,0 +1,198 @@
+- hosts: localhost
+  become: yes
+
+  tasks:
+    - name: Update and upgrade apt packages
+      apt:
+        update_cache: yes
+        upgrade: 'yes'
+
+    - name: Install XFCE4, the lightweight desktop environment for Ubuntu
+      apt:
+        name: xfce4
+        state: present
+
+    - name: Install dependencies for Guacamole & TOC
+      apt:
+        name:
+          - libreoffice
+          - libcairo2-dev
+          - libjpeg-turbo8-dev
+          - libpng-dev
+          - libossp-uuid-dev
+          - libavcodec-dev
+          - libavutil-dev
+          - libswscale-dev
+          - freerdp2-dev
+          - libpango1.0-dev
+          - libssh2-1-dev
+          - libtelnet-dev
+          - libvncserver-dev
+          - libpulse-dev
+          - libssl-dev
+          - libvorbis-dev
+          - libwebp-dev
+          - tomcat9
+          - tomcat9-admin
+          - tomcat9-common
+          - tomcat9-user
+          - expect
+          - default-jdk
+          - xarchiver
+          - unrar
+          - xrdp
+          - inotify-tools
+          - cups-pdf
+          - plank
+          - autoconf
+          - libtool
+          - pkg-config
+          - build-essential
+          - libssl-dev
+        state: present
+
+    - name: Download Guacamole Server source
+      get_url:
+        url: http://apache.org/dyn/closer.cgi?action=download&filename=guacamole/1.5.3/source/guacamole-server-1.5.3.tar.gz
+        dest: /tmp/guacamole-server-1.5.3.tar.gz
+
+    - name: Extract Guacamole Server source
+      unarchive:
+        src: /tmp/guacamole-server-1.5.3.tar.gz
+        dest: /tmp/
+        remote_src: yes
+
+    - name: Build and Install Guacamole Server
+      command: '{{ item }}'
+      args:
+        chdir: /tmp/guacamole-server-1.5.3/
+      with_items:
+        - autoreconf -fi
+        - ./configure --with-init-dir=/etc/init.d
+        - make
+        - make install
+
+    - name: Run ldconfig
+      command: ldconfig
+
+    - name: Reload systemd daemons
+      command: systemctl daemon-reload
+
+    - name: Start guacd
+      service:
+        name: guacd
+        state: started
+        enabled: yes
+
+    - name: Create required directories
+      file:
+        path: "{{ item }}"
+        state: directory
+      loop:
+        - /usr/share/tomcat9/.guacamole
+        - /etc/guacamole/extensions
+        - /etc/guacamole/lib
+
+    - name: Download Guacamole JDBC Connector
+      get_url:
+        url: 'https://downloads.apache.org/guacamole/1.5.3/binary/guacamole-auth-jdbc-1.5.3.tar.gz'
+        dest: '/tmp/guacamole-auth-jdbc-1.5.3.tar.gz'
+
+    - name: Extract Guacamole JDBC connector
+      unarchive:
+        src: /tmp/guacamole-auth-jdbc-1.5.3.tar.gz
+        dest: /tmp/
+        remote_src: yes
+
+    - name: Move JDBC connector to Guacamole extensions directory
+      command: mv /tmp/guacamole-auth-jdbc-1.5.3/mysql/guacamole-auth-jdbc-mysql-1.5.3.jar /etc/guacamole/extensions/
+
+    - name: Copy Schema Files to Ansible Folder - 1/2
+      copy:
+        src: /tmp/guacamole-auth-jdbc-1.5.3/mysql/schema/001-create-schema.sql
+        dest: /home/{{ user_name }}/.ansible/roles/thestarkster.mariadb_install/files/
+        remote_src: yes
+
+    - name: Copy Schema Files to Ansible Folder - 2/2
+      copy:
+        src: /tmp/guacamole-auth-jdbc-1.5.3/mysql/schema/002-create-admin-user.sql
+        dest: /home/{{ user_name }}/.ansible/roles/thestarkster.mariadb_install/files/
+        remote_src: yes
+
+    - name: Download MySQL Connector/J using wget
+      command:
+        cmd: wget -O /tmp/mysql-connector-java-8.0.23.tar.gz  https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-8.0.23.tar.gz
+
+    - name: Extract MySQL Connector/J
+      unarchive:
+        src: /tmp/mysql-connector-java-8.0.23.tar.gz
+        dest: /tmp/
+        remote_src: yes
+
+    - name: Move MySQL Connector/J to Guacamole lib directory
+      command: mv /tmp/mysql-connector-java-8.0.23/mysql-connector-java-8.0.23.jar /etc/guacamole/lib/
+
+    - name: Ensure /etc/guacamole directory exists
+      file:
+        path: /etc/guacamole
+        state: directory
+
+    - name: Restart both Apache Tomcat, guacd and MySQL
+      service:
+        name: "{{ item }}"
+        state: restarted
+        enabled: yes
+      loop:
+        - tomcat9
+        - guacd
+
+    - name: Create guacamole.properties if it does not exist
+      copy:
+        dest: /etc/guacamole/guacamole.properties
+        force: no
+        content: |
+          mysql-hostname: localhost
+          mysql-port: 3306
+          mysql-database: guacamole_db
+          mysql-username: guacamole_user
+          mysql-password: gritha#toc#6451
+
+          #SAMl Authentication
+          saml-idp-metadata-url: https://apis.accountsntax.com/api/v1/clients/saml/metadata
+          saml-idp-url: https://app.accountsntax.com/home
+          saml-entity-id: https://toc1.accountsntax.com/guacamole
+          saml-callback-url: https://toc1.accountsntax.com/guacamole
+          saml-strict: false
+          saml-debug: true
+          extension-priority: *, saml
+    - name: Copy guacamole.war to tomcat9 webapps
+      copy:
+        src: ../guacamole.war
+        dest: /var/lib/tomcat9/webapps/guacamole.war
+
+    - name: Download guacamole SSO extension
+      get_url:
+        url: https://dlcdn.apache.org/guacamole/1.5.3/binary/guacamole-auth-sso-1.5.3.tar.gz
+        dest: /tmp/guacamole-auth-sso-1.5.3.tar.gz
+    
+    - name: Extract the guacamole SSO extension
+      unarchive:
+        src: /tmp/guacamole-auth-sso-1.5.3.tar.gz
+        dest: /tmp/
+        remote_src: yes
+    
+    - name: Copy guacamole-auth-sso-saml-1.5.3.jar to /etc/guacamole/extensions/
+      command: mv /tmp/guacamole-auth-sso-1.5.3/saml/guacamole-auth-sso-saml-1.5.3.jar /etc/guacamole/extensions/
+
+    - name: Restart guacd and tomcat9
+      systemd:
+        name: "{{ item }}"
+        state: restarted
+      loop:
+        - guacd
+        - tomcat9
+
+    - name: Update and upgrade apt packages before sql.yml
+      apt:
+        update_cache: yes
+        upgrade: 'yes'

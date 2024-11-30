@@ -49,6 +49,8 @@
           - pkg-config
           - build-essential
           - libssl-dev
+          - python3-pip
+          - python3-passlib
         state: present
 
     - name: Download Guacamole Server source

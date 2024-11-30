@@ -164,29 +164,6 @@
           mysql-username: guacamole_user
           mysql-password: gritha#toc#6451
 
-          #SAMl Authentication
-          # saml-idp-metadata-url: https://apis.accountsntax.com/api/v1/clients/saml/metadata
-          # saml-idp-url: https://app.accountsntax.com/home
-          # saml-entity-id: https://toc1.accountsntax.com/guacamole
-          # saml-callback-url: https://toc1.accountsntax.com/guacamole
-          # saml-strict: false
-          # saml-debug: true
-          # extension-priority: *, saml
-
-    - name: Download guacamole SSO extension
-      get_url:
-        url: https://dlcdn.apache.org/guacamole/1.5.3/binary/guacamole-auth-sso-1.5.3.tar.gz
-        dest: /tmp/guacamole-auth-sso-1.5.3.tar.gz
-    
-    - name: Extract the guacamole SSO extension
-      unarchive:
-        src: /tmp/guacamole-auth-sso-1.5.3.tar.gz
-        dest: /tmp/
-        remote_src: yes
-    
-    - name: Copy guacamole-auth-sso-saml-1.5.3.jar to /etc/guacamole/extensions/
-      command: mv /tmp/guacamole-auth-sso-1.5.3/saml/guacamole-auth-sso-saml-1.5.3.jar /etc/guacamole/extensions/
-
     - name: Restart guacd and tomcat9
       systemd:
         name: "{{ item }}"

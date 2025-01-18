@@ -29,7 +29,7 @@ This repository contains Ansible playbooks for automating the setup and configur
 4. Update the variables in `group_vars/all.yml` if needed
 5. Run the master playbook:
    ```bash
-   ansible-playbook master.yml
+   ansible-playbook master.yml  -e "user_name=YOUR_USERNAME"
    ```
 
 ## Default Configuration

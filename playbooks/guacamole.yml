@@ -32,10 +32,10 @@
           - libssl-dev
           - libvorbis-dev
           - libwebp-dev
-          - tomcat9
-          - tomcat9-admin
-          - tomcat9-common
-          - tomcat9-user
+          - tomcat10
+          - tomcat10-admin
+          - tomcat10-common
+          - tomcat10-user
           - expect
           - default-jdk
           - xarchiver
@@ -91,14 +91,14 @@
         path: "{{ item }}"
         state: directory
       loop:
-        - /usr/share/tomcat9/.guacamole
+        - /usr/share/tomcat10/.guacamole
         - /etc/guacamole/extensions
         - /etc/guacamole/lib
 
     - name: Download Guacamole Client (WAR file)
       get_url:
         url: https://downloads.apache.org/guacamole/1.5.3/binary/guacamole-1.5.3.war
-        dest: /var/lib/tomcat9/webapps/guacamole.war
+        dest: /var/lib/tomcat10/webapps/guacamole.war
 
     - name: Download Guacamole JDBC Connector
       get_url:
@@ -150,7 +150,7 @@
         state: restarted
         enabled: yes
       loop:
-        - tomcat9
+        - tomcat10
         - guacd
 
     - name: Create guacamole.properties if it does not exist
@@ -164,13 +164,13 @@
           mysql-username: guacamole_user
           mysql-password: gritha#toc#6451
 
-    - name: Restart guacd and tomcat9
+    - name: Restart guacd and tomcat10
       systemd:
         name: "{{ item }}"
         state: restarted
       loop:
         - guacd
-        - tomcat9
+        - tomcat10
 
     - name: Update and upgrade apt packages before sql.yml
       apt:

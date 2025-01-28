@@ -1,0 +1,38 @@
+- hosts: localhost
+  become: yes
+
+  tasks:
+    - name: Update and upgrade apt packages
+      apt:
+        update_cache: yes
+        upgrade: 'yes'
+
+    - name: Install common software packages
+      apt:
+        name:
+          - software-properties-common
+          - build-essential
+          - ufw
+          - curl
+          - wget
+          - git
+          - htop
+          - net-tools
+          - unzip
+          - vim
+          - python3-pip
+          - ca-certificates
+          - gnupg
+          - lsb-release
+        state: present
+
+    - name: Enable UFW
+      ufw:
+        state: enabled
+        policy: deny
+
+    - name: Allow SSH through UFW
+      ufw:
+        rule: allow
+        port: ssh
+        proto: tcp

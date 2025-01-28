@@ -20,6 +20,7 @@
           - net-tools
           - unzip
           - vim
+          - nano
           - python3-pip
           - ca-certificates
           - gnupg

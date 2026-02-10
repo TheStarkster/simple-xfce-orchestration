@@ -13,31 +13,6 @@
         rule: allow
         port: 3389
 
-    - name: Allow port 3000 in UFW
-      ufw:
-        rule: allow
-        port: 3000
-
-    - name: Allow port 4000 in UFW
-      ufw:
-        rule: allow
-        port: 4000
-
-    - name: Allow port 8080 in UFW
-      ufw:
-        rule: allow
-        port: 8080
-
-    - name: Allow port 80 in UFW
-      ufw:
-        rule: allow
-        port: 80
-
-    - name: Allow port 443 in UFW
-      ufw:
-        rule: allow
-        port: 443
-
     - name: Create a group named 'sftponly'
       group:
         name: sftponly
@@ -63,61 +38,3 @@
       user:
         name: "{{ user_name }}"
         password: "{{ '12345678' | password_hash('sha512') }}"
-
-    ###########################################################################
-    # 1. Install dependencies for Python / Selenium / Chrome / ChromeDriver
-    ###########################################################################
-    - name: Install prerequisite packages for adding external repos
-      apt:
-        name:
-          - apt-transport-https
-          - ca-certificates
-          - software-properties-common
-        state: present
-        update_cache: yes
-
-    - name: Add Google Chrome signing key
-      apt_key:
-        url: https://dl.google.com/linux/linux_signing_key.pub
-        state: present
-
-    - name: Add Google Chrome repository
-      apt_repository:
-        repo: "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main"
-        state: present
-        filename: google-chrome
-
-    - name: Update apt cache after adding Chrome repo
-      apt:
-        update_cache: yes
-
-    - name: Install Google Chrome and other apt dependencies
-      apt:
-        name:
-          - google-chrome-stable    # Installs the stable channel of Google Chrome
-          - chromium-chromedriver   # Alternatively use a versioned chromedriver or google-chrome version
-          - python3
-          - python3-pip
-          - python3-psycopg2
-          - python3-dev
-          - libpq-dev               # required for building psycopg2 from source
-          - libxi6                  # often required by Chrome
-          - libgconf-2-4            # often required by Chrome
-        state: latest
-
-    - name: Upgrade pip to the latest version
-      pip:
-        name: pip
-        state: latest
-        executable: pip3
-
-    - name: Install Python libraries for selenium.py
-      pip:
-        name:
-          - selenium
-          - psycopg2-binary
-        state: latest
-        executable: pip3
-    ###########################################################################
-    # End of Python + Selenium + Chrome dependencies
-    ###########################################################################

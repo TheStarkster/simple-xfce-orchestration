@@ -22,6 +22,7 @@
           - vim
           - nano
           - python3-pip
+          - python3-passlib
           - ca-certificates
           - gnupg
           - lsb-release

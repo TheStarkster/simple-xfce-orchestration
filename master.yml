@@ -3,5 +3,4 @@
   become: yes
   
 - import_playbook: playbooks/basics.yml
-- import_playbook: playbooks/desktop.yml
 - import_playbook: playbooks/configurations.yml

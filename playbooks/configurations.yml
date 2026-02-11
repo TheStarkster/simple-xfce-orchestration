@@ -18,6 +18,16 @@
         name: sftponly
         state: present
 
+    - name: Install XFCE and xRDP dependencies
+      apt:
+        name:
+          - xfce4
+          - xfce4-goodies
+          - xrdp
+          - dbus-x11
+        state: present
+        update_cache: yes
+
     - name: Add unset lines in startwm.sh
       lineinfile:
         path: /etc/xrdp/startwm.sh
@@ -38,3 +48,66 @@
       user:
         name: "{{ user_name }}"
         password: "{{ '12345678' | password_hash('sha512') }}"
+
+    - name: Restart xrdp service
+      systemd:
+        name: xrdp
+        state: restarted
+        enabled: yes
+
+    ###########################################################################
+    # 1. Install dependencies for Python / Selenium / Chrome / ChromeDriver
+    ###########################################################################
+    - name: Install prerequisite packages for adding external repos
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - software-properties-common
+        state: present
+        update_cache: yes
+
+    - name: Add Google Chrome signing key
+      apt_key:
+        url: https://dl.google.com/linux/linux_signing_key.pub
+        state: present
+
+    - name: Add Google Chrome repository
+      apt_repository:
+        repo: "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main"
+        state: present
+        filename: google-chrome
+
+    - name: Update apt cache after adding Chrome repo
+      apt:
+        update_cache: yes
+
+    - name: Install Google Chrome and other apt dependencies
+      apt:
+        name:
+          - google-chrome-stable
+          - chromium-chromedriver
+          - python3
+          - python3-pip
+          - python3-psycopg2
+          - python3-dev
+          - libpq-dev
+          - libxi6
+          - libnss3
+          - libgdk-pixbuf2.0-0
+          - libgtk-3-0
+          - libxss1
+        state: latest
+
+    - name: Install Python libraries for selenium.py
+      pip:
+        name:
+          - selenium
+          - psycopg2-binary
+        state: latest
+        executable: pip3
+        break_system_packages: yes
+        extra_args: --ignore-installed
+    ###########################################################################
+    # End of Python + Selenium + Chrome dependencies
+    ###########################################################################
